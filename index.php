@@ -504,8 +504,8 @@
 			</div>
 			<aside class="hero-stats">
 				<div><b>00</b><span>expériences</span></div>
-				<!-- <div><b>48h</b><span>ships within</span></div> -->
-				<div><b><span data-cart-count="">0</span></b><span>dans votre panier</span></div>
+				 <!-- <div><b>48h</b><span>ships within</span></div>  -->
+				<div><b><span style="font-weight: 900;font-size: 1.5rem;letter-spacing: -0.02em;" data-cart-count="">0</span></b><span>dans votre panier</span></div>
 			</aside>
 		</div>
 	</section>
@@ -957,13 +957,13 @@
 	
 	
 	<script id="rendered-js">
+ 
 	const STORAGE_KEYS = {
-			products: "mugsy.products.v2",
-			cart: "mugsy.cart.v2",
-			favs: "mugsy.favs.v2",
-			sub: "mugsy.subscribed.v2" 
-		};
-
+			products: "officetourisme.products.v2",
+			cart: "officetourisme.cart.v2",
+			favs: "officetourisme.favs.v2",
+			sub: "officetourisme.subscribed.v2" 
+	};
 
 		const ANIM = {
 			toast: 1800,
@@ -999,13 +999,13 @@
 
 	/* Dans le popup Recherhe. Là, il y a les mots clefs qui sont "souvent" dans les textes et titres de nos news .. souvent XD */
 	const SEARCH_SUGGESTIONS = [
-	"Accessible",
-	"Bateau",
-	"Balade",
-	"Canaux",
-	"Enfant",
-	"Famille",
-	"Sport"	];
+		"Accessible",
+		"Bateau",
+		"Balade",
+		"Canaux",
+		"Enfant",
+		"Famille",
+		"Sport"	];
 
 	/* Variable qui va afficher le prix en € comme par exemple "9 €". */
 	const formatPrice = n => `${n} €`;
