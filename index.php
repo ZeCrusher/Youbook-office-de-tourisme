@@ -94,20 +94,18 @@
 	// =============================================================
 	// 1. Récupération des créneaux depuis MySQL
 	$today = date('Y-m-d');
-	$stmtSchedules = $pdo->prepare("
-		SELECT id, product_id, event_date, start_time, end_time, stock 
-		FROM youbook_product_schedules 
-		WHERE event_date >= :today 
-		ORDER BY event_date ASC, start_time ASC
-	");
+	$stmtSchedules = $pdo->prepare("SELECT id, product_id, event_date, start_time, end_time, stock 	FROM youbook_product_schedules WHERE event_date >= :today ORDER BY event_date ASC, start_time ASC");
+	
 	
 	$stmtSchedules->execute([':today' => $today]);
 	$allSchedules = $stmtSchedules->fetchAll();
 
 	// 2. REMPLACE LA BOUCLE EXISTANTE PAR CELLE-CI :
 	$schedulesByProduct = [];
+	
 	foreach ($allSchedules as $sched) {
-		// Le trim() évite les erreurs dues aux espaces invisibles
+	
+	// Le trim() évite les erreurs dues aux espaces invisibles
 		$pId = trim((string)$sched['product_id']); 
 		
 		if (!isset($schedulesByProduct[$pId])) {
@@ -141,9 +139,9 @@
 		];
 	}
 
-	// =============================================================
+	// =================================================================
 	// 3. APPEL cURL API YOUBOOK (Récupération de toutes les activités)
-	// =============================================================
+	// =================================================================
 	$url = "http://public.api.youbook.travel/v3/products/list";
 	$headers = ["X-Backend: true", "Content-Type: application/json", "Authorization: Bearer ".$clef];
 	$data = [
@@ -263,12 +261,7 @@
 
 	// 1. Charger les créneaux futurs depuis MySQL
 	$today = date('Y-m-d');
-	$stmtSchedules = $pdo->prepare("
-		SELECT id, product_id, event_date, start_time, end_time, stock 
-		FROM youbook_product_schedules 
-		WHERE event_date >= :today 
-		ORDER BY event_date ASC, start_time ASC
-	");
+	$stmtSchedules = $pdo->prepare("SELECT id, product_id, event_date, start_time, end_time, stock FROM youbook_product_schedules WHERE event_date >= :today ORDER BY event_date ASC, start_time ASC");
 	$stmtSchedules->execute([':today' => $today]);
 	$allSchedules = $stmtSchedules->fetchAll();
 
@@ -364,11 +357,7 @@
 		$description = 'Aucune description disponible.';
 		if (!empty($product['descriptions']) && is_array($product['descriptions'])) {
 			foreach ($product['descriptions'] as $desc) {
-				if (
-					isset($desc['lang'], $desc['type']) &&
-					$desc['lang'] === 'fr-FR' &&
-					$desc['type'] === 'PRESENTATION'
-				) {
+				if (isset($desc['lang'], $desc['type']) && $desc['lang'] === 'fr-FR' &&	$desc['type'] === 'PRESENTATION') {
 					$description = trim(strip_tags($desc['content']));
 					break;
 				}
@@ -377,6 +366,8 @@
 
 		// Extraction du prix avec arrondi propre à 2 décimales
 		$price = round((float)($product['priceFrom'] ?? $product['price'] ?? 0), 2);
+
+		
 
 		// Adresse / Point de rdv
 		$address = '';
@@ -406,13 +397,12 @@
 		];		
 	}, $productsList);
 ?>
-
   
 </head>
 
 <body translate="no">
   <div class="marquee" aria-hidden="true">
-	<div class="marquee-track">
+	<div class="marquee-track"> <!-- A faire en lien avec la liste des produits -->
 		<span>En ce moment</span><span>✦</span>
 		<span>produit 1</span><span>✦</span>
 		<span>produit 2</span><span>✦</span>
@@ -1008,7 +998,10 @@
 		"Sport"	];
 
 	/* Variable qui va afficher le prix en € comme par exemple "9 €". */
-	const formatPrice = n => `${n} €`;
+	//const formatPrice = n => `${n} €`;
+	/* Petite correction, car ça affiche des nombres à virugles 25.349999999999998 € même avec un float 2 */ 
+	const formatPrice = n => `${Number(n).toFixed(2)} €`;
+	
 	const escapeHTML = (s) =>s.replace(/[&<>"']/g,(c) =>({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 
@@ -1095,17 +1088,34 @@ class Store extends EventBus {
   isFav(id) {
     return this.favs.includes(id);
   }
-  cartTotals() {
-    let count = 0,
-    total = 0;
-    for (const id in this.cart) {
-      const p = this.productsById[id];
-      if (!p) continue;
-      count += this.cart[id].qty;
-      total += this.cart[id].qty * p.price;
-    }
-    return { count, total };
-  }
+  
+  
+  /* Correction Arrondis le total calculé à 2 décimales avant de le retourner */
+	/* V1 -> cartTotals() {
+		let count = 0,
+		total = 0;
+		for (const id in this.cart) {
+			const p = this.productsById[id];
+			if (!p) continue;
+			count += this.cart[id].qty;
+			total += this.cart[id].qty * p.price;
+		}
+		return { count, total };
+	} */
+	
+	/* V2 */
+	cartTotals() {
+		let count = 0,
+		total = 0;
+		for (const id in this.cart) {
+			const p = this.productsById[id];
+			if (!p) continue;
+			count += this.cart[id].qty;
+			total += this.cart[id].qty * p.price;
+		}
+		return { count, total: Math.round(total * 100) / 100 };
+	}
+	
   allTags() {
     const set = new Set();
     this.products.forEach(p => (p.tags || []).forEach(t => set.add(t)));
@@ -1134,17 +1144,19 @@ class Store extends EventBus {
     this.storage.save(STORAGE_KEYS.sub, this.subscribed);
   }
 
-  addToCart(id, options = {}) {
-    const p = this.productsById[id];
-    if (!p) return;
-    if (!this.cart[id]) this.cart[id] = { qty: 1, options, addedAt: Date.now() };else
-    {
-      this.cart[id].qty += 1;
-      this.cart[id].options = options;
-    }
+	addToCart(id, options = {}) {
+		const p = this.productsById[id];
+		if (!p) return;
+		if (!this.cart[id]) 
+			this.cart[id] = { qty: 1, options, addedAt: Date.now() }; 
+		else    {
+			this.cart[id].qty += 1;
+			this.cart[id].options = options;
+		}
     this._persist();
     this.emit("cart:changed", { id, type: "add" });
   }
+  
   changeQty(id, delta) {
     if (!this.cart[id]) return;
     this.cart[id].qty += delta;
@@ -1394,53 +1406,55 @@ class Component {
   }}
 
 
-const BuyButton = {
-  render(card, product, qty) {
-    const buy = card.querySelector("[data-buy]");
-    
-    // Si le stock est à 0 ou négatif, on affiche le bouton "Complet"
-    if (product.stock !== undefined && product.stock <= 0) {
-      buy.replaceChildren(this._outOfStock());
-      return;
-    }
+	const BuyButton = {
+		render(card, product, qty) {
+		const buy = card.querySelector("[data-buy]");
+		
+		// Si le stock est à 0 ou négatif, on affiche le bouton "Complet"
+		if (product.stock !== undefined && product.stock <= 0) {
+			buy.replaceChildren(this._outOfStock());
+			return;
+		}
 
-    // Sinon, comportement habituel (Ajouter ou Stepper)
-    buy.replaceChildren(
-      qty === 0 ? this._add(product) : this._stepper(product, qty)
-    );
-  },
-  
-  _add(product) {
-    const node = tpl("#t-buy-add");
-    node.dataset.add = product.id;
-    node.querySelector(".add-arrow").textContent = `${formatPrice(product.price)} →`;
-    return node;
-  },
+			// Sinon, comportement habituel (Ajouter ou Stepper)
+			buy.replaceChildren(
+			qty === 0 ? this._add(product) : this._stepper(product, qty)
+			);
+		},
+	  
+	  _add(product) {
+		const node = tpl("#t-buy-add");
+		node.dataset.add = product.id;
+		node.querySelector(".add-arrow").textContent = `${formatPrice(product.price)} →`;
+		return node;
+	  },
 
-  _outOfStock() {
-    const btn = document.createElement("button");
-    btn.className = "btn-disabled";
-    btn.disabled = true;
-    btn.textContent = "Complet";
-    btn.style.cssText = "width: 100%; padding: 8px; background: #e0e0e0; color: #757575; border: none;  cursor: not-allowed; font-weight: bold;height: 46px;border: 0;border-radius: 999px;";
-    return btn;
-  },
-/* 
-<div class="buy" data-buy=""><button type="button" class="buy-add" data-add="ingenie:V_OTMARTIGUESACCUEIL_5796808">
-		<span class="add-label">Ajouter au panier</span>
-		<span class="add-arrow">1.95 € →</span>
-	</button></div>
+	  _outOfStock() {
+		const btn = document.createElement("button");
+		btn.className = "btn-disabled";
+		btn.disabled = true;
+		btn.textContent = "Complet";
+		btn.style.cssText = "width: 100%; padding: 8px; background: #e0e0e0; color: #757575; border: none;  cursor: not-allowed; font-weight: bold;height: 46px;border: 0;border-radius: 999px;";
+		return btn;
+	  },
+	/* 
+	<div class="buy" data-buy=""><button type="button" class="buy-add" data-add="ingenie:V_OTMARTIGUESACCUEIL_5796808">
+			<span class="add-label">Ajouter au panier</span>
+			<span class="add-arrow">1.95 € →</span>
+		</button></div>
 
-*/
-  _stepper(product, qty) {
-    const node = tpl("#t-buy-stepper");
-    node.querySelector("[data-dec]").dataset.dec = product.id;
-    node.querySelector("[data-inc]").dataset.inc = product.id;
-    node.querySelector(".qty").textContent = qty;
-    node.querySelector(".line-total").textContent = formatPrice(qty * product.price);
-    return node;
-  }
-};
+	*/
+	
+		/* Les lignes d'articles et le sélecteur de quantité */
+		_stepper(product, qty) {
+			const node = tpl("#t-buy-stepper");
+			node.querySelector("[data-dec]").dataset.dec = product.id;
+			node.querySelector("[data-inc]").dataset.inc = product.id;
+			node.querySelector(".qty").textContent = qty;
+			node.querySelector(".line-total").textContent = formatPrice(qty * product.price);
+			return node;
+		}
+	};
 
 /*
 
