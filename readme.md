@@ -174,7 +174,7 @@ Le code est organisé autour de plusieurs classes et services spécialisés.
 
 Le démarrage de l'application est assuré par une fonction d'initialisation appelée `boot()`.
 
-## 🔌 Intégration avec PHP
+## Intégration avec PHP
 
 Les activités sont injectées dans le script à partir d'une variable PHP nommée `$formattedProducts`.
 
