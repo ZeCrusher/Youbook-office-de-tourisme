@@ -1,5 +1,8 @@
 Et que voilà un descriptif détaillé du code source de votre fichier `index.php` :
 
+<img width="1370" height="882" alt="image" src="https://github.com/user-attachments/assets/7a6e58ef-0be1-4188-92d0-3154792dea16" />
+
+
 ### Introduction
 
 Ce fichier PHP est le fichier public du site web, gérant l'affichage des données et les fonctionnalités principales. 
