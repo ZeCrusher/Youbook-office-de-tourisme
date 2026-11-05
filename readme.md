@@ -1,5 +1,7 @@
 Mise à jour 2026-11-05 : Et si on ajoutait APIDAE ? 
-Là, l'idée est de rassembler les deux bases. Au terme de tout cela. 
+Là, l'idée est de rassembler les deux bases. 
+Au terme de tout cela... Bref, pourquoi y ?  
+
 Note : Est ce l'éléphant dans la pièce !
 
 Et que voilà un descriptif détaillé du code source de votre fichier `index.php` :
