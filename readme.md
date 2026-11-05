@@ -1,3 +1,7 @@
+Mise à jour 2026-11-05 : Et si on ajoutait APIDAE ? 
+Là, l'idée est de rassembler les deux bases. Au terme de tout cela. 
+Note : Est ce l'éléphant dans la pièce !
+
 Et que voilà un descriptif détaillé du code source de votre fichier `index.php` :
 
 <img width="1370" height="882" alt="image" src="https://github.com/user-attachments/assets/7a6e58ef-0be1-4188-92d0-3154792dea16" />
